@@ -79,6 +79,69 @@ class Win32comExcelWrapper(object):
         self.logger.info("Closing Excel")
         self.xl.Quit()
 
+    def getWorksheet(self, wb, ws_name_or_number):
+        """Returns a worksheet object corresponding to ws_name
+            -wb : a workbook object
+            -ws_name : string containing the worksheet name or int for it's number
+        """
+        self.logger.info("Getting worksheet %s" %ws_name_or_number)
+        return wb.Sheets(ws_name_or_number)
+
+    def copyWorksheet(self, wb, source_sheet, new_name):
+        """Copy a worksheet, source_sheet must be the name of the
+        worksheet in a String, you cannot use an integer"""
+        self.logger.info("Duplicating worksheet %s to %s" %(source_sheet, new_name))
+        ws = wb.Sheets(source_sheet)
+        ws.Copy(Before=wb.Sheets(source_sheet))
+        ws = wb.Sheets(source_sheet + " (2)")
+        ws.Name = new_name
+
+    def deleteworksheet(self, wb, ws_name_or_number):
+        """Delete a worksheet, you can use the number of the sheet,
+        or it's actual name as a string, the first worksheet is 1"""
+        self.logger.info("Deleting worksheet %s" %ws_name_or_number)
+        ws = wb.Sheets(ws_name_or_number)
+        ws.Delete()
+
+    def insertWorksheet(self, wb, position, name):
+        """Insert a new worksheet 1 step behind position
+            -wb : workbook object from openWorkbook()
+            -position : name or number of a sheet
+            -name : name of the new worksheet
+        """
+        self.logger.info("inserting new worksheet %s before %s" %(name, position))
+        wb.Sheets(position).Select()
+        new_ws = wb.Worksheets.Add()
+        new_ws.Name = name
+
+    def moveWorksheet(self, wb, ws_name_or_number, new_position):
+        """Moves a worksheet to a new position
+            -wb : workbook object from openWorkbook()
+            -ws_name_or_number : the worksheet to move
+            -new_position : an int
+        """
+        self.logger.info("moving worksheet %s just before %s" %(ws_name_or_number, new_position))
+        wb.Sheets(ws_name_or_number).Move(Before=wb.Sheets(new_position+1))
+
+    def renameworkSheet(self, wb, ws_name_or_number, new_name):
+        """Renames a worksheet
+            -wb : workbook object from openWorkbook()
+            -ws_name_or_number : the worksheet to rename
+            -new_name : the new name
+        """
+        self.logger.info("Renaming worksheet %s to %s" %(ws_name_or_number, new_name))
+        wb.Sheets(ws_name_or_number).Name = new_name
+
+    def hideSheet(self, wb, ws_name_or_number):
+        """Hide a worksheet by name or position"""
+        self.logger.info("Hiding worksheet %s" %ws_name_or_number)
+        wb.Sheets(ws_name_or_number).Visible = False
+
+    def unhideSheet(self, wb, ws_name):
+        """Unhide a worksheet by name (a hidden sheet has no position)"""
+        self.logger.info("Unhiding worksheet %s" %ws_name)
+        wb.Sheets(ws_name).Visible = True
+
     class RangeCoordinate():
         """
         Class representing a Range Coordinate, typical use :

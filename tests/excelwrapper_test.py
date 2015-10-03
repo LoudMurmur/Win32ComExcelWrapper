@@ -25,15 +25,6 @@ class ExcelWrapperTest(unittest.TestCase):
 
         wrapper.closeExcel()
 
-    def test_getWorkbookGetWorksheet(self):
-        """ test that get worksheet is working (so testing openWorkbook too)"""
-        wrapper = Win32comExcelWrapper()
-        wrapper.openExcel()
-        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
-        #if getWorksheet fail you get an exception here
-        _ = wb.Sheets("FOO")
-        wrapper.closeExcel()
-
     def test_saveWorkbookAs(self):
         wrapper = Win32comExcelWrapper()
         saved_wb_name = "saved.xlsx"
@@ -104,6 +95,166 @@ class ExcelWrapperTest(unittest.TestCase):
 
         self.assertEqual(expected_values, writen_values)
 
+    def test_getWorkbookGetWorksheet(self):
+        """ test that get worksheet is working (so testing openWorkbook too)"""
+        wrapper = Win32comExcelWrapper()
+        wrapper.openExcel()
+        ws_name = "FOO"
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        #if getWorksheet fail you get an exception here
+        ws = wrapper.getWorksheet(wb, ws_name)
+        self.assertEqual(ws_name, ws.Name)
+        wrapper.closeExcel()
+
+    def test_getWorksheetByNumber(self):
+        """ test that get worksheet is working (so testing openWorkbook too)"""
+        wrapper = Win32comExcelWrapper()
+        wrapper.openExcel()
+        ws_number = 1
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        #if getWorksheet fail you get an exception here
+        ws = wrapper.getWorksheet(wb, ws_number)
+        self.assertEqual(wb.Sheets(1).Name, ws.Name)
+        wrapper.closeExcel()
+
+    def test_copyWorksheet(self):
+        wrapper = Win32comExcelWrapper()
+        first_ws_name = "Feuil1"
+        copy_ws_name = "DaCopy"
+
+        #open workbook, write in it, then copy the sheet
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        ws = wb.Sheets(first_ws_name)
+        ws.Cells(1, 1).Value = "FOO"
+        ws.Cells(3, 2).Value = "BAR"
+        wrapper.copyWorksheet(wb, first_ws_name, copy_ws_name)
+        wb.Sheets(copy_ws_name)
+
+        #extract data from the copied sheet
+        values = ws.Range(ws.Cells(1, 1), ws.Cells(3, 2)).Value
+        wrapper.closeExcel()
+
+        self.assertEqual((("FOO", None), (None, None), (None, "BAR")), values)
+
+    def test_deleteWorksheetByName(self):
+        wrapper = Win32comExcelWrapper()
+        first_ws_name = "Feuil1"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        wrapper.deleteworksheet(wb, first_ws_name)
+        try:
+            wb.Sheets(first_ws_name)
+            self.fail("%s has not been deleted" %first_ws_name)
+        except:
+            pass
+        wrapper.closeExcel()
+
+    def test_deleteWorksheetByPosition(self):
+        wrapper = Win32comExcelWrapper()
+        first_ws_name = "Feuil1"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        wrapper.deleteworksheet(wb, 1)
+        try:
+            wb.Sheets(first_ws_name)
+            self.fail("%s has not been deleted" %first_ws_name)
+        except:
+            pass
+        wrapper.closeExcel()
+
+    def test_insertWorksheet(self):
+        wrapper = Win32comExcelWrapper()
+        ws_name = "freshLeaf"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        wrapper.insertWorksheet(wb, 2, ws_name)
+        try:
+            _ = wb.Sheets(ws_name)
+            self.fail("%s has not been inserted" %ws_name)
+        except:
+            pass
+        self.assertEqual(ws_name, wb.Sheets(2).Name)
+        wrapper.closeExcel()
+
+    def test_moveWorksheetByName(self):
+        wrapper = Win32comExcelWrapper()
+        first_ws_name = "Feuil1"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        wrapper.moveWorksheet(wb, first_ws_name, 2)
+        self.assertEqual(first_ws_name, wb.Sheets(2).Name)
+        wrapper.closeExcel()
+
+    def test_moveWorksheetBynumber(self):
+        wrapper = Win32comExcelWrapper()
+        first_ws_name = "Feuil1"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        wrapper.moveWorksheet(wb, 1, 2)
+        self.assertEqual(first_ws_name, wb.Sheets(2).Name)
+        wrapper.closeExcel()
+
+    def test_renameWorksheetByName(self):
+        wrapper = Win32comExcelWrapper()
+        new_name = "FIRST!"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        wrapper.renameworkSheet(wb, "Feuil1", "FIRST!")
+
+        self.assertEqual(new_name, wb.Sheets(1).Name)
+        wrapper.closeExcel()
+
+    def test_renameWorksheetByPosition(self):
+        wrapper = Win32comExcelWrapper()
+        new_name = "FIRST!"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        wrapper.renameworkSheet(wb, 1, "FIRST!")
+
+        self.assertEqual(new_name, wb.Sheets(1).Name)
+        wrapper.closeExcel()
+
+    def test_hideSheetByName(self):
+        wrapper = Win32comExcelWrapper()
+        ws_name = "Feuil1"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        wb.Sheets(ws_name).Visible = True
+        wrapper.hideSheet(wb, ws_name)
+        self.assertEqual(False, wb.Sheets(ws_name).Visible)
+        wrapper.closeExcel()
+
+    def test_hideSheetByPosition(self):
+        wrapper = Win32comExcelWrapper()
+        ws_pos = 1
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        wb.Sheets(ws_pos).Visible = True
+        wrapper.hideSheet(wb, ws_pos)
+        self.assertEqual(False, wb.Sheets("Feuil1").Visible) #hidden sheet has no position
+        wrapper.closeExcel()
+
+    def test_unhideSheet(self):
+        wrapper = Win32comExcelWrapper()
+        ws_name = "Feuil1"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        wb.Sheets(ws_name).Visible = False
+        wrapper.unhideSheet(wb, ws_name)
+        self.assertTrue(False != wb.Sheets(ws_name).Visible)
+        wrapper.closeExcel()
+
     def _eraseSafely(self, path):
         if exists(path):
             os.remove(path)
@@ -111,8 +262,8 @@ class ExcelWrapperTest(unittest.TestCase):
     def _openWbAndExtractRange(self, wrapper, wb_name, ws_name, coord):
         """Open excel, read a range, close excel"""
         wrapper.openExcel()
-        wb = wrapper.getWorkbook(util.getTestRessourcePath(wb_name))
-        ws = wrapper.getWorksheet(wb, ws_name)
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath(wb_name))
+        ws = wb.Sheets(ws_name)
         values = ws.Range(
                           ws.Cells(coord.tline, coord.tcol),
                           ws.Cells(coord.bline, coord.bcol)
