@@ -142,6 +142,69 @@ class Win32comExcelWrapper(object):
         self.logger.info("Unhiding worksheet %s" %ws_name)
         wb.Sheets(ws_name).Visible = True
 
+    def writeCellValue(self, ws, row, column, value):
+        """Write a value inside a cell
+            -ws : worksheet object aquired by calling getWorksheet()
+            -row : int representing cell row location
+            -column : int representing cell column location
+            -value : the value to be written
+        """
+        self.logger.info("Writing cell(%s, %s) value %s" %(row, column, value))
+        ws.Cells(row, column).Value = value
+
+    def writeCellFormula(self, ws, row, column, formula):
+        """Write a formula inside a cell
+            -ws : worksheet object aquired by calling getWorksheet()
+            -row : int representing cell row location
+            -column : int representing cell column location
+            -formula : the formula to be written
+        """
+        self.logger.info("Writing cell(%s, %s) formula %s" %(row, column, formula))
+        ws.Cells(row, column).FormulaR1C1 = formula
+
+    def writeCell(self, ws, row, column, value):
+        """Write a value inside a cell, autodetect forumula by cheking for '='
+            -ws : worksheet object aquired by calling getWorksheet()
+            -row : int representing cell row location
+            -column : int representing cell column location
+            -value : the value/formula to be written
+        """
+        def isFormulaR1C1(value):
+            return isinstance(value, (str, unicode)) and len(value) > 1 and value[0] == '='
+        if isFormulaR1C1(value):
+            self.writeCellFormula(ws, row, column, value)
+        else:
+            self.writeCellValue(ws, row, column, value)
+
+    def writeAreaCellByCell(self, ws, ul_row, ul_col, data):
+        """write the content of data in an excel worksheet, autodetect formula,
+        unrecommended for large amount of data, very slow
+            -ws : worksheet object aquired by calling getWorksheet()
+            -ul_row : upper left row of the location where the data mus be writen
+            -ul_col : upper left column of the location where the data mus be writen
+            -data : data stored in a list of list, each list is a row
+        """
+        for row in data:
+            paste_column = ul_col
+            for value in row:
+                self.writeCell(ws, ul_row, paste_column, value)
+                paste_column = paste_column +1
+            ul_row = ul_row + 1
+
+    def writeAreaInOneCall(self, ws, ul_row, ul_col, data):
+        """Write an area in one call, 100 times faster than writing by cell
+            -ws : worksheet object aquired by calling getWorksheet()
+            -ul_row : upper left row of the location where the data mus be writen
+            -ul_col : upper left column of the location where the data mus be writen
+            -data : data store in a list of list, each list is a row
+        """
+        length = len(data)
+        width = len(data[0])
+        lr_row = ul_row+length-1
+        lr_col = ul_col+width-1
+        self.logger.info("writring data at location %s,%s to %s,%s" %(ul_row, ul_col, lr_row, lr_col))
+        ws.Range(ws.Cells(ul_row, ul_col), ws.Cells(lr_row, lr_col)).Value = data
+
     class RangeCoordinate():
         """
         Class representing a Range Coordinate, typical use :

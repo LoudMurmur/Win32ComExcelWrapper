@@ -255,6 +255,135 @@ class ExcelWrapperTest(unittest.TestCase):
         self.assertTrue(False != wb.Sheets(ws_name).Visible)
         wrapper.closeExcel()
 
+    def test_writeCellValue(self):
+        wrapper = Win32comExcelWrapper()
+        ws_name = "Feuil1"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        wrapper.writeCellValue(ws, 42, 42, "H2G2")
+        wrapper.writeCellValue(ws, 12, 34, 56)
+        cell42_value = ws.Cells(42, 42).Value
+        cell1234_value = ws.Cells(12, 34).Value
+        wrapper.closeExcel()
+
+        self.assertEqual("H2G2", cell42_value)
+        self.assertEqual(56, cell1234_value)
+
+    def test_writeCellFormula(self):
+        wrapper = Win32comExcelWrapper()
+        ws_name = "Feuil1"
+        formula = "=SUM(R5C4:RC[-18])"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        wrapper.writeCellFormula(ws, 42, 42, formula)
+        cell42_value = ws.Cells(42, 42).FormulaR1C1
+        wrapper.closeExcel()
+
+        self.assertEqual(formula, cell42_value)
+
+    def test_writeCell(self):
+        wrapper = Win32comExcelWrapper()
+        ws_name = "Feuil1"
+        formula = "=SUM(R5C4:RC[-18])"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        wrapper.writeCell(ws, 42, 42, "H2G2")
+        wrapper.writeCell(ws, 12, 34, formula)
+        cell42_value = ws.Cells(42, 42).Value
+        cell1234_formula = ws.Cells(12, 34).FormulaR1C1
+        wrapper.closeExcel()
+
+        self.assertEqual("H2G2", cell42_value)
+        self.assertEqual(formula, cell1234_formula)
+
+    def test_writeAreaCellByCell(self):
+        wrapper = Win32comExcelWrapper()
+        ws_name = "Feuil1"
+        formula = "=SUM(R5C4:RC[-1])"
+        data = (
+               ("this", "is", "now", "written"),
+               (None, "in", "Excel", None),
+               (None, None, None, formula)
+               )
+
+        expected_value_range = (
+                                (u"this", u"is", u"now", u"written"),
+                                (None, u"in", u"Excel", None),
+                                (None, None, None, 0.0)
+                               )
+
+        expected_formulas_range = (
+                                   (u"this", u"is", u"now", u"written"),
+                                   (u"", u"in", u"Excel", u""),
+                                   (u"", u"", u"", unicode(formula))
+                                  )
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        wrapper.writeAreaCellByCell(ws, 5, 8, data)
+
+        written_data_values = ws.Range(
+                                       ws.Cells(5, 8),
+                                       ws.Cells(7, 11)
+                                       ).Value
+        written_data_formulas = ws.Range(
+                                         ws.Cells(5, 8),
+                                         ws.Cells(7, 11)
+                                         ).FormulaR1C1
+
+        wrapper.closeExcel()
+
+        self.assertEqual(expected_value_range, written_data_values)
+        self.assertEqual(expected_formulas_range, written_data_formulas)
+
+    def test_writeAreaInOneCall(self):
+        wrapper = Win32comExcelWrapper()
+        ws_name = "Feuil1"
+        formula = "=SUM(R5C4:RC[-5])"
+        data = (
+               ("this", "is", "now", "written"),
+               (None, "in", "Excel", None),
+               (None, "foo", None, formula)
+               )
+
+        expected_value_range = (
+                                (u"this", u"is", u"now", u"written"),
+                                (None, u"in", u"Excel", None),
+                                (None, "foo", None, 0.0)
+                               )
+
+        expected_formulas_range = (
+                                   (u"this", u"is", u"now", u"written"),
+                                   (u"", u"in", u"Excel", u""),
+                                   (u"", u"foo", u"", unicode(formula))
+                                  )
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        wrapper.writeAreaInOneCall(ws, 5, 8, data)
+
+        written_data_values = ws.Range(
+                                       ws.Cells(5, 8),
+                                       ws.Cells(7, 11)
+                                       ).Value
+        written_data_formulas = ws.Range(
+                                         ws.Cells(5, 8),
+                                         ws.Cells(7, 11)
+                                         ).FormulaR1C1
+
+        wrapper.closeExcel()
+
+        self.assertEqual(expected_value_range, written_data_values)
+        self.assertEqual(expected_formulas_range, written_data_formulas)
+
+
     def _eraseSafely(self, path):
         if exists(path):
             os.remove(path)
