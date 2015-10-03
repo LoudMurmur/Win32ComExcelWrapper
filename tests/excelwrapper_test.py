@@ -405,6 +405,234 @@ class ExcelWrapperTest(unittest.TestCase):
         self.assertEqual(expected_value_range, written_data_values)
         self.assertEqual(expected_formulas_range, written_data_formulas)
 
+    def test_readCellValue(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+
+        value_3203 = wrapper.readCellValue(ws, 32, 3)
+        wrapper.closeExcel()
+
+        self.assertEqual(u"yolo", value_3203)
+
+    def test_readCellValueExn(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+
+        value_C32 = wrapper.readCellValueExn(ws, "C32")
+        value_C32_2 = wrapper.readCellValueExn(ws, "$C$32")
+        wrapper.closeExcel()
+
+        self.assertEqual(u"yolo", value_C32)
+        self.assertEqual(u"yolo", value_C32_2)
+
+    def test_readAreaValues(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        expected_data = ((None, None, None, u'r', None),
+                         (u'c', u'd', u'e', u'f', u'g'),
+                         (None, u'e', u'f', u'g', u'h'),
+                         (None, None, None, None, None),
+                         (u'f', u'g', u'h', u'i', None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, u'e', u'f', u'g'))
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+
+        coord = Win32comExcelWrapper.RangeCoordinate(1, 3, 13, 7)
+        data = wrapper.readAreaValues(ws, coord)
+        wrapper.closeExcel()
+
+        self.assertEqual(expected_data, data)
+
+    def test_readAreaValuesExn(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        expected_data = ((None, None, None, u'r', None),
+                         (u'c', u'd', u'e', u'f', u'g'),
+                         (None, u'e', u'f', u'g', u'h'),
+                         (None, None, None, None, None),
+                         (u'f', u'g', u'h', u'i', None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, None, None, None),
+                         (None, None, u'e', u'f', u'g'))
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+
+        data = wrapper.readAreaValuesExn(ws, "C1:G13")
+        data2 = wrapper.readAreaValuesExn(ws, "$C$1:$G$13")
+        wrapper.closeExcel()
+
+        self.assertEqual(expected_data, data)
+        self.assertEqual(expected_data, data2)
+
+    def test_computeCellExcelAddress(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        adr = wrapper.computeCellExcelAddress(ws, 7, 3)
+        wrapper.closeExcel()
+
+        self.assertEqual("$C$7", adr)
+
+    def test_ComputeColumnExcelAddress(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        adr = wrapper.ComputeColumnExcelAddress(ws, 10)
+        wrapper.closeExcel()
+
+        self.assertEqual("$J:$J", adr)
+
+    def test_computeColumnsExcelAddress(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        adr = wrapper.computeColumnsExcelAddress(ws, 5, 9)
+        wrapper.closeExcel()
+
+        self.assertEqual("$E:$I", adr)
+
+    def test_computeRowExcelAddress(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        adr = wrapper.computeRowExcelAddress(ws, 7)
+        wrapper.closeExcel()
+
+        self.assertEqual("$7:$7", adr)
+
+    def test_computeRowsExcelAddress(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        adr = wrapper.computeRowsExcelAddress(ws, 2, 10)
+        wrapper.closeExcel()
+
+        self.assertEqual("$2:$10", adr)
+
+    def test_computeAreaExcelAddress(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+        coord = Win32comExcelWrapper.RangeCoordinate(1, 3, 13, 7)
+        adr = wrapper.computeAreaExcelAddress(ws, coord)
+
+        wrapper.closeExcel()
+
+        self.assertEqual("$C$1:$G$13", adr)
+
+    def test_computeColumnLastLine(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+        exp_results = [2, 5, 32, 5, 13, 13, 13, 13, 1]
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+
+        results = []
+        results.append(wrapper.computeColumnLastLine(ws, 1))
+        results.append(wrapper.computeColumnLastLine(ws, 2))
+        results.append(wrapper.computeColumnLastLine(ws, 3))
+        results.append(wrapper.computeColumnLastLine(ws, 4))
+        results.append(wrapper.computeColumnLastLine(ws, 5))
+        results.append(wrapper.computeColumnLastLine(ws, 6))
+        results.append(wrapper.computeColumnLastLine(ws, 7))
+        results.append(wrapper.computeColumnLastLine(ws, 8))
+        results.append(wrapper.computeColumnLastLine(ws, 20))
+
+        wrapper.closeExcel()
+
+        self.assertEqual(exp_results, results)
+
+    def test_computeLastColumn(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+
+        last_col = wrapper.computeLastColumn(ws)
+        wrapper.closeExcel()
+
+        self.assertEqual(18, last_col)
+
+    def test_computeAreaFromData(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        ws_name = "FOO"
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("filledWorkbook.xlsx"))
+        ws = wb.Sheets(ws_name)
+
+        data = [
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0]
+               ]
+
+        adr = wrapper.computeAreaAddressFromData(ws, 3, 3, data)
+        wrapper.closeExcel()
+
+        self.assertEqual("C3:H6", adr)
 
     def _eraseSafely(self, path):
         if exists(path):

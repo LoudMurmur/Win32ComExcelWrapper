@@ -4,6 +4,7 @@
 import logmanager
 
 from win32com import client
+from win32com.client import constants
 
 class Win32comExcelWrapper(object):
     def __init__(self):
@@ -188,6 +189,211 @@ class Win32comExcelWrapper(object):
         lr_col = ul_col+width-1
         self.logger.info("writring data at location %s,%s to %s,%s" %(ul_row, ul_col, lr_row, lr_col))
         ws.Range(ws.Cells(ul_row, ul_col), ws.Cells(lr_row, lr_col)).Value = data
+
+    def readCellValue(self, ws, row, col):
+        """Read the value of a cell
+            -ws : the worksheet object
+            -row : int containing the row number
+            -col : int containing the column number
+            -return : value of the cell, type chosed by Excel
+        """
+        self.logger.debug("Reading cell (%s, %s)" %(row, col))
+        return ws.Cells(row, col).Value
+
+    def readCellValueExn(self, ws, location):
+        """Read the value of a cell using the Excel notation (Exn)
+           for example the cell(1,1) is A1
+            -ws : the worksheet object
+            -location : Excel Address of the cell (G7 or $G$7, both work)
+            -return : value of the cell, type chosed by Excel
+        """
+        self.logger.debug("Reading cell %s" %(location))
+        return ws.Range(location).Value
+
+    def readRowValue(self, ws, row):
+        """I don't see the point of doing that (you'll get TONS of None value),
+        use read area
+
+        or use ws.Rows(row_number).Value[0]
+
+        """
+        self.logger.warn("readRowValue is NOT implemented")
+
+    def readRowsValue(self, ws, top_row, bottom_row):
+        """I don't see the point of doing that (you'll get TONS of None value),
+        use read area
+
+        or use ws.Range(
+                        ws.Rows(top_row_number),
+                        ws.Rows(bottom_row_number)
+                        ).Value
+
+        """
+        self.logger.warn("readRowsValue is NOT implemented")
+
+    def readColumnValue(self, ws, column):
+        """I don't see the point of doing that (you'll get TONS of None value),
+        use read area
+
+        or use ws.Columns(col_number_or_letter)
+
+        """
+        self.logger.warn("readColumnValue is NOT implemented")
+
+    def readColumnsValue(self):
+        """I don't see the point of doing that (you'll get TONS of None value),
+        use read area
+
+        or use ws.Range(ws.Columns(lef_col), ws.Columns(right_col))
+
+        """
+        self.logger.warn("readColumnsValue is NOT implemented")
+
+    def readAreaValues(self, ws, coord):
+        """
+        Read the values of a rectangular area
+            -ws : a worksheet object
+            -coord : a excelwrapper.RangeCoordinate object
+            -return : a tuple of tuples
+        """
+        self.logger.info("Reading area ((%s, %s),(%s, %s)) value(s)" %(coord.tline, coord.tcol, coord.bline, coord.bcol))
+        return ws.Range(
+                         ws.Cells(coord.tline, coord.tcol),
+                         ws.Cells(coord.bline, coord.bcol)
+                        ).Value
+
+    def readAreaValuesExn(self, ws, exn_coord):
+        """
+        Read the values of an area using the excel coordinate
+        (string looking like that A8:B5 or $A$8:$B$5 both work)
+            -ws : a worksheet object
+            -exn_coord : a string containing the excel coord of the area
+                         (can be a cell, a row, a column, a square, etc)
+            -return: depends of the area, a tuple for a cell, a tuple of tuples
+                     for a square, etc
+        """
+        self.logger.info("Reading area %s value(s)" %exn_coord)
+        return ws.Range(exn_coord).Value
+
+    def computeColumnLastLine(self, ws, column):
+        """
+            Compute the last line of a column
+                -ws: the worksheet object
+                -column : the column number (int) or letter(s) (str)
+                -return : an int
+        """
+        self.logger.debug("Computing column %s.%s last line" %(ws.Name, column))
+        used_range = ws.UsedRange
+        return ws.Cells(
+                        used_range.Row + used_range.Rows.Count,
+                        column
+                        ).End(constants.xlUp).Row
+
+    def computeLastColumn(self, ws):
+        """
+            Compute the last column of a worksheet
+                -ws : worksheet object
+                -return : an int
+        """
+        self.logger.info("Computing last column of %s" %ws.Name)
+        return ws.UsedRange.Column + ws.UsedRange.Columns.Count - 1
+
+    #TODO : store the last opened workbook to do calculations?
+    def computeCellExcelAddress(self, ws, row, col):
+        """
+            Compute a cell excel Address from numerical coordinate
+                -ws : a worksheet object, any worksheet, it's in fact excel
+                      which will compute the cell Address from the coordinate
+                -row : row number as int
+                -col : column number as int
+                -return : excel Address in a string (ex : $G$7 for cell 7, 3)
+        """
+        self.logger.info("Converting cell %s, %s Address" %(row, col))
+        return ws.Cells(row, col).GetAddress()
+
+    def computeAreaExcelAddress(self, ws, coord):
+        """
+            Compute an area excel Address from numerical coordinate
+                -ws : a worksheet object, any worksheet, it's in fact excel
+                      which will compute the cell Address from the coordinate
+                -coord : a excelwrapper.RangeCoordinate object
+                -return : excel Address in a string
+                          (ex : $C$1:$G$13 for RangeCoordinate(1, 3, 13, 7))
+        """
+        self.logger.info("Converting area ((%s, %s),(%s, %s)) Address" %(coord.tline, coord.tcol, coord.bline, coord.bcol))
+        return ws.Range(
+                        ws.Cells(coord.tline, coord.tcol),
+                        ws.Cells(coord.bline, coord.bcol)
+                        ).GetAddress()
+
+    def ComputeColumnExcelAddress(self, ws, col):
+        """
+            Compute a column excel Address from numerical coordinate
+                -ws : a worksheet object, any worksheet, it's in fact excel
+                      which will compute the cell Address from the coordinate
+                -col : column number as an int
+                -return : excel Address in a string (ex : $J:$J for col 10)
+        """
+        self.logger.info("Converting column %s Address" %col)
+        return ws.Columns(col).GetAddress()
+
+    def computeColumnsExcelAddress(self, ws, left_col, right_col):
+        """
+            Compute a range of columns excel Address from numerical coordinate
+                -ws : a worksheet object, any worksheet, it's in fact excel
+                      which will compute the cell Address from the coordinate
+                -col : column number as an int
+                -return : excel Address in a string (ex : $E:$I for cols 5 to 9)
+        """
+        self.logger.info("Converting colums %s to %s Address" %(left_col, right_col))
+        return ws.Range(
+                        ws.Columns(left_col),
+                        ws.Columns(right_col)
+                        ).GetAddress()
+
+    def computeRowExcelAddress(self, ws, row):
+        """
+            Compute a row excel Address from numerical coordinate
+                -ws : a worksheet object, any worksheet, it's in fact excel
+                      which will compute the cell Address from the coordinate
+                -row : row number as an int
+                -return : excel Address in a string (ex : $7:$7 for row 7)
+        """
+        self.logger.info("Converting row %s Address" %row)
+        return ws.Rows(row).GetAddress()
+
+    def computeRowsExcelAddress(self, ws, top_row, bottom_row):
+        """
+            Compute a rows range excel Address from numerical coordinate
+                -ws : a worksheet object, any worksheet, it's in fact excel
+                      which will compute the cell Address from the coordinate
+                -top_row : top row number as an int
+                -bottom_row : bottom row number as an int
+                -return : excel Address in a string (ex : $7:$8 for row 7 to 8)
+        """
+        self.logger.info("Converting rows %s to %s Address" %(top_row, bottom_row))
+        return ws.Range(
+                        ws.Rows(top_row),
+                        ws.Rows(bottom_row)
+                        ).GetAddress()
+
+    def computeAreaAddressFromData(self, ws, start_row, start_col, data):
+        """
+            Compite the Address of and area from data (list of lists or tuple
+            of tuples), the area start from start_row and start_col obviously
+                -ws : a worsheet object
+                -start_row : start row as a int
+                -start_col as an int
+                -data : list of lists or tuple of tuples
+                -return : Excel Address string like EY32:ZZ55
+        """
+        self.logger.info("Computing adress occupied by a data block starting"
+                         + "at (%s, %s)" %(start_row, start_col))
+        return ws.Range(
+                        ws.Cells(start_row, start_col),
+                        ws.Cells(start_row + len(data) - 1,
+                                 start_col + len(data[0]) - 1)
+                        ).GetAddress(RowAbsolute=False, ColumnAbsolute=False)
 
     class RangeCoordinate():
         """
