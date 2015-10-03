@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # --*-- encoding: iso-8859-1 --*--
 
-import logging
+import logmanager
 
-from logging.handlers import RotatingFileHandler
 from win32com import client
 
 class Win32comExcelWrapper(object):
@@ -17,26 +16,11 @@ class Win32comExcelWrapper(object):
         #clics on the Excel window have no effect
         #(set back to True before closing Excel)
         self.interactive = False
-        self.initLogger()
-
-    def initLogger(self):
-        self.logger = logging.getLogger("Excel wrapper")
-        #setting level to debug to see everything
-        self.logger.setLevel(logging.DEBUG)
-        #pretty self.logger.info(for logger
-        formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-        #First logger writting on file, 1MB max
-        file_handler = RotatingFileHandler('ExcelWrapper.log', 'a', 1000000, 1)
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
-        #second logger writing over the console
-        steam_handler = logging.StreamHandler()
-        steam_handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(steam_handler)
+        self.logger = logmanager.getLogger("Excel wrapper")
 
     def openExcel(self):
         """ Lauch Excel and set it's configuration"""
+        self.logger.info("\n") #hack for better output
         self.logger.info("Opening Excel")
         self.xl = client.Dispatch("Excel.Application")
         self.logger.info("Setting Excel configuration")

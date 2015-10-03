@@ -7,15 +7,18 @@ import unittest
 import util
 import os
 import time
+import logmanager
 
 from excelwrapper import Win32comExcelWrapper
 from os.path import exists
 
 class ExcelWrapperTest(unittest.TestCase):
 
+    LOGGER = logmanager.getLogger("test wrapper")
     def test_openExcel(self):
         """Test that excel is configured with the right values"""
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         wrapper.openExcel()
 
         self.assertEqual(0, wrapper.xl.DisplayAlerts)
@@ -25,8 +28,10 @@ class ExcelWrapperTest(unittest.TestCase):
 
         wrapper.closeExcel()
 
+        wrapper.logger = self.LOGGER
     def test_saveWorkbookAs(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         saved_wb_name = "saved.xlsx"
         first_ws_name = "Feuil1"
 
@@ -60,6 +65,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_save(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         blank_copy_name = "emptyWorkbookCopy.xlsx"
         first_ws_name = "Feuil1"
 
@@ -119,6 +125,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_copyWorksheet(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         first_ws_name = "Feuil1"
         copy_ws_name = "DaCopy"
 
@@ -139,6 +146,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_deleteWorksheetByName(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         first_ws_name = "Feuil1"
 
         wrapper.openExcel()
@@ -153,6 +161,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_deleteWorksheetByPosition(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         first_ws_name = "Feuil1"
 
         wrapper.openExcel()
@@ -167,6 +176,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_insertWorksheet(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         ws_name = "freshLeaf"
 
         wrapper.openExcel()
@@ -182,6 +192,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_moveWorksheetByName(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         first_ws_name = "Feuil1"
 
         wrapper.openExcel()
@@ -192,6 +203,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_moveWorksheetBynumber(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         first_ws_name = "Feuil1"
 
         wrapper.openExcel()
@@ -202,6 +214,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_renameWorksheetByName(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         new_name = "FIRST!"
 
         wrapper.openExcel()
@@ -213,6 +226,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_renameWorksheetByPosition(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         new_name = "FIRST!"
 
         wrapper.openExcel()
@@ -224,6 +238,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_hideSheetByName(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         ws_name = "Feuil1"
 
         wrapper.openExcel()
@@ -235,6 +250,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_hideSheetByPosition(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         ws_pos = 1
 
         wrapper.openExcel()
@@ -246,6 +262,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_unhideSheet(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         ws_name = "Feuil1"
 
         wrapper.openExcel()
@@ -257,6 +274,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_writeCellValue(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         ws_name = "Feuil1"
 
         wrapper.openExcel()
@@ -273,6 +291,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_writeCellFormula(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         ws_name = "Feuil1"
         formula = "=SUM(R5C4:RC[-18])"
 
@@ -287,6 +306,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_writeCell(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         ws_name = "Feuil1"
         formula = "=SUM(R5C4:RC[-18])"
 
@@ -304,6 +324,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_writeAreaCellByCell(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         ws_name = "Feuil1"
         formula = "=SUM(R5C4:RC[-1])"
         data = (
@@ -344,6 +365,7 @@ class ExcelWrapperTest(unittest.TestCase):
 
     def test_writeAreaInOneCall(self):
         wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
         ws_name = "Feuil1"
         formula = "=SUM(R5C4:RC[-5])"
         data = (
