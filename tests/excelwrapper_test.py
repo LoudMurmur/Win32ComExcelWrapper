@@ -966,6 +966,157 @@ class ExcelWrapperTest(unittest.TestCase):
         self.assertEqual(0.0, cellG14_fontColor)
         self.assertEqual(white_color, cellG20_color)
 
+    def test_copyPaste(self):
+
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        wrapper.openExcel()
+
+        def copyPasteColumns():
+
+            wrapper.logger.info("#### Testing copyPasteColumns ####")
+            wb = wrapper.getWorkbook(util.getTestRessourcePath("copyPaste.xls"))
+
+            def copyPasteColumnsAllNumerical():
+                ws = wb.Sheets(1)
+                first_col = wrapper.readAreaValuesExn(ws, "A1:A25")
+                wrapper.copyPasteColumns(ws, ws, 1, 4)
+                pasted_col = wrapper.readAreaValuesExn(ws, "D1:D25")
+                self.assertEqual(first_col, pasted_col)
+
+            def copyPastecolumnsSourceNumerical():
+                ws = wb.Sheets(2)
+                first_col = wrapper.readAreaValuesExn(ws, "A1:A25")
+                wrapper.copyPasteColumns(ws, ws, 1, 'D:D')
+                pasted_col = wrapper.readAreaValuesExn(ws, "D1:D25")
+                self.assertEqual(first_col, pasted_col)
+
+            def copyPasteColumnsDestNumerical():
+                ws = wb.Sheets(3)
+                first_twocol = wrapper.readAreaValuesExn(ws, "A1:B25")
+                wrapper.copyPasteColumns(ws, ws, 'A:B', 4)
+                pasted_twocol = wrapper.readAreaValuesExn(ws, "D1:E25")
+                self.assertEqual(first_twocol, pasted_twocol)
+
+            def copyPasteColumnsAllExcelAdress():
+                ws = wb.Sheets(4)
+                first_twocol = wrapper.readAreaValuesExn(ws, "A1:B25")
+                wrapper.copyPasteColumns(ws, ws, 'A:B', 'D:D')
+                pasted_twocol = wrapper.readAreaValuesExn(ws, "D1:E25")
+                self.assertEqual(first_twocol, pasted_twocol)
+
+            def copyPasteColumnsCutMode():
+                ws = wb.Sheets(5)
+                first_twocol = wrapper.readAreaValuesExn(ws, "A1:B25")
+                empty_twocol = wrapper.readAreaValuesExn(ws, "C1:D25")
+                wrapper.copyPasteColumns(ws, ws, 'A:B', 'D:D', True)
+                pasted_twocol = wrapper.readAreaValuesExn(ws, "D1:E25")
+                first_twocol_aftercut = wrapper.readAreaValuesExn(ws, "A1:B25")
+                self.assertEqual(first_twocol, pasted_twocol)
+                self.assertEqual(empty_twocol, first_twocol_aftercut)
+
+            copyPasteColumnsAllNumerical()
+            copyPastecolumnsSourceNumerical()
+            copyPasteColumnsDestNumerical()
+            copyPasteColumnsAllExcelAdress()
+            copyPasteColumnsCutMode()
+
+            wrapper.closeWorkbookWithoutSaving(wb)
+
+        def copyPasteRows():
+
+            wrapper.logger.info("#### Testing copyPasteColumns ####")
+            wb = wrapper.getWorkbook(util.getTestRessourcePath("copyPaste.xls"))
+
+            def copyPasteRowsAllNumerical():
+                ws = wb.Sheets(1)
+                first_row = wrapper.readAreaValuesExn(ws, "A1:B1")
+                wrapper.copyPasteRows(ws, ws, 1, 40)
+                pasted_row = wrapper.readAreaValuesExn(ws, "A40:B40")
+                self.assertEqual(first_row, pasted_row)
+
+            def copyPasteRowsSourceNumerical():
+                ws = wb.Sheets(2)
+                first_row = wrapper.readAreaValuesExn(ws, "A1:B1")
+                wrapper.copyPasteRows(ws, ws, 1, '40:40')
+                pasted_row = wrapper.readAreaValuesExn(ws, "A40:B40")
+                self.assertEqual(first_row, pasted_row)
+
+            def copyPasteRowsDestNumerical():
+                ws = wb.Sheets(3)
+                first_3row = wrapper.readAreaValuesExn(ws, "A1:B3")
+                wrapper.copyPasteRows(ws, ws, '1:3', 40)
+                pasted_3row = wrapper.readAreaValuesExn(ws, "A40:B42")
+                self.assertEqual(first_3row, pasted_3row)
+
+            def copyPasteRowsAllExcelAdress():
+                ws = wb.Sheets(4)
+                first_3row = wrapper.readAreaValuesExn(ws, "A1:B3")
+                wrapper.copyPasteRows(ws, ws, '1:3', '40:40')
+                pasted_3row = wrapper.readAreaValuesExn(ws, "A40:B42")
+                self.assertEqual(first_3row, pasted_3row)
+
+            def copyPasteRowsCutMode():
+                ws = wb.Sheets(5)
+                first_3row = wrapper.readAreaValuesExn(ws, "A1:B3")
+                empty_3row = wrapper.readAreaValuesExn(ws, "A26:B28")
+                wrapper.copyPasteRows(ws, ws, '1:3', '40:40', True)
+                pasted_3row = wrapper.readAreaValuesExn(ws, "A40:B42")
+                first_3row_aftercut = wrapper.readAreaValuesExn(ws, "A1:B3")
+                self.assertEqual(first_3row, pasted_3row)
+                self.assertEqual(empty_3row, first_3row_aftercut)
+
+            copyPasteRowsAllNumerical()
+            copyPasteRowsSourceNumerical()
+            copyPasteRowsDestNumerical()
+            copyPasteRowsAllExcelAdress()
+            copyPasteRowsCutMode()
+
+            wrapper.closeWorkbookWithoutSaving(wb)
+
+        def copyAreaRows():
+
+            wrapper.logger.info("#### Testing copyPasteColumns ####")
+            wb = wrapper.getWorkbook(util.getTestRessourcePath("copyPaste.xls"))
+
+            def copyPasteArea():
+                ws = wb.Sheets(1)
+                area_values = wrapper.readAreaValuesExn(ws, "A1:B10")
+                wrapper.copyPasteArea(ws, ws, "A1:B10", "G40")
+                pasted_area = wrapper.readAreaValuesExn(ws, "G40:H49")
+                self.assertEqual(area_values, pasted_area)
+
+            def copyPasteAreaCutMode():
+                ws = wb.Sheets(2)
+                area_values_before = wrapper.readAreaValuesExn(ws, "A1:B10")
+                empty_area_values = wrapper.readAreaValuesExn(ws, "C1:D10")
+                wrapper.copyPasteArea(ws, ws, "A1:B10", "G40", True)
+                pasted_area_values = wrapper.readAreaValuesExn(ws, "G40:H49")
+                area_aftercut = wrapper.readAreaValuesExn(ws, "A1:B10")
+                self.assertEqual(area_values_before, pasted_area_values)
+                self.assertEqual(empty_area_values, area_aftercut)
+
+            def pasteAreaOnOtherWorksheet():
+                ws = wb.Sheets(1)
+                dst_ws = wb.Sheets(6)
+                area_values = wrapper.readAreaValuesExn(ws, "A1:B10")
+                wrapper.copyPasteArea(ws, dst_ws, "A1:B10", "G40")
+                pasted_area = wrapper.readAreaValuesExn(dst_ws, "G40:H49")
+                self.assertEqual(area_values, pasted_area)
+
+            copyPasteArea()
+            copyPasteAreaCutMode()
+            pasteAreaOnOtherWorksheet()
+
+            wrapper.closeWorkbookWithoutSaving(wb)
+
+        copyPasteColumns()
+        copyPasteRows()
+        copyAreaRows()
+
+        wrapper.closeExcel()
+
     def _eraseSafely(self, path):
         if exists(path):
             os.remove(path)

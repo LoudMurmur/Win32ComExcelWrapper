@@ -6,6 +6,32 @@ import logmanager
 from win32com import client
 from win32com.client import constants
 
+class ExcelColors:
+    """BGR format color, my favorites :
+        -REDLIGHT
+        -GREENOLIVE
+        -ORANGEDARK
+    """
+    BLACK = int("000000", 16)
+    BLUE = int("FF0000", 16)
+    BLUELIGHT = int("CD7418", 16)
+    BLUEROYAL = int("E16941", 16)
+    BROWN = int("14698B", 16)
+    GRAY = int("BEBEBE", 16)
+    GREEN = int("00FF00", 16)
+    GREENOLIVE = int("70FFCA", 16)
+    ORANGE = int("32B7FF", 16)
+    ORANGEDARK = int("247FFF", 16)
+    PINK = int("AB82FF", 16)
+    PURPLE = int("E22B8A", 16)
+    RED = int("0000FF", 16)
+    REDLIGHT = int("4040FF", 16)
+    WHITE = int("FFFFFF", 16)
+    YELLOW = int("00D7FF", 16)
+
+class WrapperException(Exception):
+    pass
+
 class Win32comExcelWrapper(object):
     def __init__(self):
         #avoid pop up blocking execution during automation
@@ -497,6 +523,83 @@ class Win32comExcelWrapper(object):
         """
         self.logger.info("Clearing area %s in %s" %(exnadr, ws.Name))
         ws.Range(exnadr).ClearContents()
+
+#######################################################
+######                                           ######
+######         copy/paste operations             ######
+######                                           ######
+#######################################################
+
+    def copyPasteColumns(self, src_ws, dst_ws, sourceColumns, destColumn, cut=False):
+        """
+            you can copy one or several columns, if only one then use it's int
+            number or excel adress (ex ; 'J:J') the destination can be used the same way.
+            If copying several columns then use the excel adress for the source (ex : 'B:R')
+            and use for the destColmun it's int number or excel adress.
+
+            you can also copy over the same worksheet using src_ws == dst_ws
+            And yes, if you use 2 ws from different workbook, it will paste across them.
+
+            If you copy several columns then the left column will correspond
+            to destColumn
+                -src_ws : a worksheet object
+                -dst_ws : a worksheet object
+                -souceColumns : Excel adress of one or several columns
+                                ('J:J' = column J, 'J:K' = col J to K)
+                                Adress can be converted from int with computeColumnsExcelAddress
+                -destColumn : int or Excel adress of ONE column
+                -cut : set to True to cut/paste instead of copy/paste
+        """
+        if cut:
+            src_ws.Columns(sourceColumns).Cut()
+        else:
+            src_ws.Columns(sourceColumns).Copy()
+        dst_ws.Paste(dst_ws.Columns(destColumn))
+
+    def copyPasteRows(self, src_ws, dst_ws, sourceRows, destRow, cut=False):
+        """
+            you can copy one or several rows, if only one then use it's int
+            number or excel adress (ex ; 'J:J') the destination can be used the same way.
+            If copying several rows then use the excel adress for the source (ex : '7:10')
+            and use for the destRow it's int number or excel adress.
+
+            you can also copy over the same worksheet using src_ws == dst_ws
+            And yes, if you use 2 ws from different workbook, it will paste across them.
+
+            If you copy several Rows then the top row will correspond to destRow
+                -src_ws : a worksheet object
+                -dst_ws : a worksheet object
+                -souceRows : Excel adress of one or several Rows
+                             ('J:J' = column J, 'J:K' = col J to K)
+                             Adress can be converted from int with computeRowsExcelAddress
+                -destRow : int or Excel adress of ONE row
+                -cut : set to True to cut/paste instead of copy/paste
+        """
+        if cut:
+            src_ws.Rows(sourceRows).Cut()
+        else:
+            src_ws.Rows(sourceRows).Copy()
+        dst_ws.Paste(dst_ws.Rows(destRow))
+
+    def copyPasteArea(self, src_ws, dst_ws, sourceArea, destCell, cut=False):
+        """
+            copy and paste an area, use only excel addresses (you can convert numerical value
+            using computeAreaExcelAddress and computeCellExcelAdress)
+
+            And yes, if you use 2 ws from different workbook, it will paste across them.
+
+            -src_ws : source worksheet object
+            -dst_ws : destination worksheet object (you can use src == dst to copy on the same sheet)
+            -sourceArea : an area excel address ('C23' for a single cell, 'A35:G42' an area)
+            -destCell : a cell excel address (ex : 'C23) it will correspond the the top left corner
+                        of the area to paste
+        """
+        if cut:
+            src_ws.Range(sourceArea).Cut()
+        else:
+            src_ws.Range(sourceArea).Copy()
+        dst_ws.Paste(dst_ws.Range(destCell))
+
 
     class RangeCoordinate():
         """
