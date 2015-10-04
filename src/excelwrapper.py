@@ -37,7 +37,7 @@ class Win32comExcelWrapper(object):
         #avoid pop up blocking execution during automation
         self.displayAlerts = 0
         #Excel is visible
-        self.visible = 1
+        self.visible = 0
         #you won't see what happens (faster)
         self.screenUpdating = False
         #clics on the Excel window have no effect

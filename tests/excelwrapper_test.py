@@ -35,20 +35,6 @@ class ExcelWrapperTest(unittest.TestCase):
 
     AREA = "A1:H13"
 
-    def test_openExcel(self):
-        """Test that excel is configured with the right values"""
-        wrapper = Win32comExcelWrapper()
-        wrapper.logger = self.LOGGER
-        wrapper.openExcel()
-
-        self.assertEqual(0, wrapper.xl.DisplayAlerts)
-        self.assertEqual(1, wrapper.xl.Visible)
-        self.assertEqual(False, wrapper.xl.ScreenUpdating)
-        self.assertEqual(False, wrapper.xl.Interactive)
-
-        wrapper.closeExcel()
-
-        wrapper.logger = self.LOGGER
     def test_saveWorkbookAs(self):
         wrapper = Win32comExcelWrapper()
         wrapper.logger = self.LOGGER
