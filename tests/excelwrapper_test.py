@@ -15,6 +15,25 @@ from os.path import exists
 class ExcelWrapperTest(unittest.TestCase):
 
     LOGGER = logmanager.getLogger("test wrapper")
+
+    BEFORE = (
+               (None, None, None, None, None, None, None, None),
+               (None, None, None, None, None, None, None, None),
+               (None, None, None, None, None, None, None, None),
+               (None, u'a', u'b', u'c', u'd', u'e', None, None),
+               (None, u'f', u'g', u'h', u'i', u'j', None, None),
+               (None, u'k', u'l', u'm', u'n', u'o', None, None),
+               (None, u'p', u'q', u'r', u's', u'r', None, None),
+               (None, u'u', u'v', u'w', u'x', u'y', None, None),
+               (None, u'z', u'aa', u'ab', u'ac', u'ad', None, None),
+               (None, u'ae', u'af', u'ag', u'ah',u'ai', None, None),
+               (None, None, None, None, None, None, None, None),
+               (None, None, None, None, None, None, None, None),
+               (None, None, None, None, None, None, None, None)
+             )
+
+    AREA = "A1:H13"
+
     def test_openExcel(self):
         """Test that excel is configured with the right values"""
         wrapper = Win32comExcelWrapper()
@@ -633,6 +652,319 @@ class ExcelWrapperTest(unittest.TestCase):
         wrapper.closeExcel()
 
         self.assertEqual("C3:H6", adr)
+
+    def test_insertEmptyRow(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        expected_after = (
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, u'a', u'b', u'c', u'd', u'e', None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, u'f', u'g', u'h', u'i', u'j', None, None),
+                          (None, u'k', u'l', u'm', u'n', u'o', None, None),
+                          (None, u'p', u'q', u'r', u's', u'r', None, None),
+                          (None, u'u', u'v', u'w', u'x', u'y', None, None),
+                          (None, u'z', u'aa', u'ab', u'ac', u'ad', None, None),
+                          (None, u'ae', u'af', u'ag', u'ah', u'ai', None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None)
+                          )
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("insertDelete.xlsx"))
+        ws = wb.Sheets(1)
+
+        data_before = ws.Range(self.AREA).Value
+        wrapper.insertEmptyRow(ws, 5)
+        data_after = ws.Range(self.AREA).Value
+
+        wrapper.closeExcel()
+
+        self.assertEqual(data_before, self.BEFORE)
+        self.assertEqual(expected_after, data_after)
+
+    def test_insertEmptyRowExn(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        expected_after = (
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, u'a', u'b', u'c', u'd', u'e', None, None),
+                          (None, u'f', u'g', u'h', u'i', u'j', None, None),
+                          (None, u'k', u'l', u'm', u'n', u'o', None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, u'p', u'q', u'r', u's', u'r', None, None),
+                          (None, u'u', u'v', u'w', u'x', u'y', None, None),
+                          (None, u'z', u'aa', u'ab', u'ac', u'ad', None, None),
+                          (None, u'ae', u'af', u'ag', u'ah', u'ai', None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None)
+                          )
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("insertDelete.xlsx"))
+        ws = wb.Sheets(1)
+
+        data_before = ws.Range(self.AREA).Value
+        wrapper.insertEmptyRow(ws, "7:7")
+        data_after = ws.Range(self.AREA).Value
+
+        wrapper.closeExcel()
+
+        self.assertEqual(data_before, self.BEFORE)
+        self.assertEqual(expected_after, data_after)
+
+    def test_insertEmptyColumn(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        expected_after = (
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, u'a', None, u'b', u'c', u'd', u'e', None),
+                          (None, u'f', None, u'g', u'h', u'i', u'j', None),
+                          (None, u'k', None, u'l', u'm', u'n', u'o', None),
+                          (None, u'p', None, u'q', u'r', u's', u'r', None),
+                          (None, u'u', None, u'v', u'w', u'x', u'y', None),
+                          (None, u'z', None, u'aa', u'ab', u'ac', u'ad', None),
+                          (None, u'ae', None, u'af', u'ag', u'ah', u'ai', None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None)
+                         )
+
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("insertDelete.xlsx"))
+        ws = wb.Sheets(1)
+
+        data_before = ws.Range(self.AREA).Value
+        wrapper.insertEmptyColumn(ws, 3)
+        data_after = ws.Range(self.AREA).Value
+
+        wrapper.closeExcel()
+
+        self.assertEqual(data_before, self.BEFORE)
+        self.assertEqual(expected_after, data_after)
+
+    def test_insertEmptyColumnExn(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        expected_after = (
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, u'a', u'b', u'c', None, u'd', u'e', None),
+                          (None, u'f', u'g', u'h', None, u'i', u'j', None),
+                          (None, u'k', u'l', u'm', None, u'n', u'o', None),
+                          (None, u'p', u'q', u'r', None, u's', u'r', None),
+                          (None, u'u', u'v', u'w', None, u'x', u'y', None),
+                          (None, u'z', u'aa', u'ab', None, u'ac', u'ad', None),
+                          (None, u'ae', u'af', u'ag', None, u'ah', u'ai', None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None)
+                         )
+
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("insertDelete.xlsx"))
+        ws = wb.Sheets(1)
+
+        data_before = ws.Range(self.AREA).Value
+        wrapper.insertEmptyColumn(ws, "E:E")
+        data_after = ws.Range(self.AREA).Value
+
+        wrapper.closeExcel()
+
+        self.assertEqual(data_before, self.BEFORE)
+        self.assertEqual(expected_after, data_after)
+
+    def test_deleteOneRow(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        expected_after = (
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, u'a', u'b', u'c', u'd', u'e', None, None),
+                          (None, u'f', u'g', u'h', u'i', u'j', None, None),
+                          (None, u'k', u'l', u'm', u'n', u'o', None, None),
+                          (None, u'u', u'v', u'w', u'x', u'y', None, None),
+                          (None, u'z', u'aa', u'ab', u'ac', u'ad', None, None),
+                          (None, u'ae', u'af', u'ag', u'ah', u'ai', None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None)
+                         )
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("insertDelete.xlsx"))
+        ws = wb.Sheets(1)
+
+        data_before = ws.Range(self.AREA).Value
+        wrapper.deleteRow(ws, 7)
+        data_after = ws.Range(self.AREA).Value
+
+        wrapper.closeExcel()
+
+        self.assertEqual(data_before, self.BEFORE)
+        self.assertEqual(expected_after, data_after)
+
+    def test_deleteSeveralRows(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        expected_after = (
+                           (None, None, None, None, None, None, None, None),
+                           (None, None, None, None, None, None, None, None),
+                           (None, None, None, None, None, None, None, None),
+                           (None, u'a', u'b', u'c', u'd', u'e', None, None),
+                           (None, u'u', u'v', u'w', u'x', u'y', None, None),
+                           (None, u'z', u'aa', u'ab', u'ac', u'ad', None, None),
+                           (None, u'ae', u'af', u'ag', u'ah',u'ai', None, None),
+                           (None, None, None, None, None, None, None, None),
+                           (None, None, None, None, None, None, None, None),
+                           (None, None, None, None, None, None, None, None),
+                           (None, None, None, None, None, None, None, None),
+                           (None, None, None, None, None, None, u'test test', u'chuuuchuu'),
+                           (None, None, None, None, None, None, None, None)
+                         )
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("insertDelete.xlsx"))
+        ws = wb.Sheets(1)
+
+        data_before = ws.Range(self.AREA).Value
+        wrapper.deleteRow(ws, "5:7")
+        data_after = ws.Range(self.AREA).Value
+
+        wrapper.closeExcel()
+
+        self.assertEqual(data_before, self.BEFORE)
+        self.assertEqual(expected_after, data_after)
+
+    def test_deleteOneColumn(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        expected_after = (
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, u'a', u'b', u'd', u'e', None, None, None),
+                          (None, u'f', u'g', u'i', u'j', None, None, None),
+                          (None, u'k', u'l', u'n', u'o', None, None, None),
+                          (None, u'p', u'q', u's', u'r', None, None, None),
+                          (None, u'u', u'v', u'x', u'y', None, None, None),
+                          (None, u'z', u'aa', u'ac', u'ad', None, None, None),
+                          (None, u'ae', u'af', u'ah', u'ai', None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None)
+                         )
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("insertDelete.xlsx"))
+        ws = wb.Sheets(1)
+
+        data_before = ws.Range(self.AREA).Value
+        wrapper.deleteColumn(ws, 4)
+        data_after = ws.Range(self.AREA).Value
+
+        wrapper.closeExcel()
+
+        self.assertEqual(data_before, self.BEFORE)
+        self.assertEqual(expected_after, data_after)
+
+    def test_deleteSeveralColumn(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        expected_after = (
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, u'a', u'e', None, None, None, None, 1.0),
+                          (None, u'f', u'j', None, None, None, None, None),
+                          (None, u'k', u'o', None, None, None, None, 5.0),
+                          (None, u'p', u'r', None, None, None, None, 5.0),
+                          (None, u'u', u'y', None, None, None, None, 5.0),
+                          (None, u'z', u'ad', None, None, None, None, 5.0),
+                          (None, u'ae', u'ai', None, None, None,None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None),
+                          (None, None, None, None, None, None, None, None)
+                         )
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("insertDelete.xlsx"))
+        ws = wb.Sheets(1)
+
+        data_before = ws.Range(self.AREA).Value
+        wrapper.deleteColumn(ws, "C:E")
+        data_after = ws.Range(self.AREA).Value
+
+        wrapper.closeExcel()
+
+        self.assertEqual(data_before, self.BEFORE)
+        self.assertEqual(expected_after, data_after)
+
+    def test_clearCell(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        white_color = 7405514.0
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("insertDelete.xlsx"))
+        ws = wb.Sheets(1)
+
+        wrapper.clearCell(ws, 10, 2)
+        wrapper.clearCell(ws, 6, 11)
+        wrapper.clearCell(ws, 14, 7)
+        wrapper.clearCell(ws, 20, 7)
+
+        cellB10_value = ws.Cells(10, 2).Value
+        cellK6_formula = ws.Cells(6, 11).FormulaR1C1
+        cellG14_fontColor = ws.Cells(14, 7).Font.Color
+        cellG20_color = ws.Cells(20, 7).Interior.Color
+        wrapper.closeExcel()
+
+        self.assertEqual(None, cellB10_value)
+        self.assertEqual(u'', cellK6_formula)
+        self.assertEqual(0.0, cellG14_fontColor)
+        self.assertEqual(white_color, cellG20_color)
+
+    def test_clearArea(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        white_color = 7405514.0
+
+        wrapper.openExcel()
+        wb = wrapper.xl.Workbooks.Open(util.getTestRessourcePath("insertDelete.xlsx"))
+        ws = wb.Sheets(1)
+
+        wrapper.clearArea(ws, "B6:M22")
+
+        cellB10_value = ws.Cells(10, 2).Value
+        cellK6_formula = ws.Cells(6, 11).FormulaR1C1
+        cellG14_fontColor = ws.Cells(14, 7).Font.Color
+        cellG20_color = ws.Cells(20, 7).Interior.Color
+        wrapper.closeExcel()
+
+        self.assertEqual(None, cellB10_value)
+        self.assertEqual(u'', cellK6_formula)
+        self.assertEqual(0.0, cellG14_fontColor)
+        self.assertEqual(white_color, cellG20_color)
 
     def _eraseSafely(self, path):
         if exists(path):

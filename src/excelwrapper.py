@@ -395,6 +395,67 @@ class Win32comExcelWrapper(object):
                                  start_col + len(data[0]) - 1)
                         ).GetAddress(RowAbsolute=False, ColumnAbsolute=False)
 
+    def deleteColumn(self, ws, columns):
+        """
+            Delete on or several columns, the shifting is set to left (like in excel)
+                -ws : a worksheet object
+                -columns : an int for a single column, a string for several ones (ex : D:K)
+                           computeColumn(s)ExcelAdress can be used to get that string
+        """
+        self.logger.info("Deleting column(s) %s from %s" %(columns, ws.Name))
+        ws.Columns(columns).Delete(Shift=constants.xlToLeft)
+
+    def deleteRow(self, ws, rows):
+        """
+            Delete on or several rows, the shifting is set Up (like in excel)
+                -ws : a worksheet object
+                -rows : an int for a single row, a string for several ones (ex : '7:15')
+                        computeRow(s)ExcelAdress can be used to get that string
+        """
+        self.logger.info("Deleting row(s) %s from %s" %(rows, ws.Name))
+        ws.Rows(rows).Delete(Shift=constants.xlUp)
+
+    def insertEmptyColumn(self, ws, column):
+        """
+            insert one column, the shifting is set to Right (like in excel)
+                -ws : a worksheet object
+                -columns : an int for a single column or a string containing it's Excel adress
+        """
+        self.logger.info("Inserting empty column at %s in %s" %(column, ws.Name))
+        ws.Columns(column).Insert(Shift=constants.xlToRight,
+                                  CopyOrigin=constants.xlFormatFromLeftOrAbove)
+
+    def insertEmptyRow(self, ws, row):
+        """insert a new row, the shifting is set to down (like in excel)
+            -ws : a worksheet object
+            -row : an int for a single row, or a string (ex : '7:7' for row 7)
+        """
+        self.logger.info("Inserting empty row at %s in %s" %(row, ws.Name))
+        ws.Rows(row).Insert(Shift=constants.xlDown,
+                            CopyOrigin=constants.xlFormatFromLeftOrAbove)
+
+    def clearCell(self, ws, row, col):
+        """
+            Clear a cell : reset everything, you get a blank cell
+            No formula, color, value remaining
+                -ws : a worksheet object
+                -row : int containing the row of the cell
+                -col : int containing the columns of the cell
+        """
+        self.logger.info("Clearing cell %s.%s on %s" %(row, col, ws.Name))
+        ws.Cells(row, col).ClearContents()
+
+    def clearArea(self, ws, exnadr):
+        """
+            Clear an area : reset everything, you get a blank cell
+            No formula, color, value remaining
+                -ws : a worksheet object
+                -exnadr : excel adress, can be converted from numerical values
+                          using the computeXXXXExcelAddress methods
+        """
+        self.logger.info("Clearing area %s in %s" %(exnadr, ws.Name))
+        ws.Range(exnadr).ClearContents()
+
     class RangeCoordinate():
         """
         Class representing a Range Coordinate, typical use :
