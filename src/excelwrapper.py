@@ -19,6 +19,12 @@ class Win32comExcelWrapper(object):
         self.interactive = False
         self.logger = logmanager.getLogger("Excel wrapper")
 
+#######################################################
+######                                           ######
+######              Basic operations             ######
+######                                           ######
+#######################################################
+
     def openExcel(self):
         """ Lauch Excel and set it's configuration"""
         self.logger.info("\n") #hack for better output
@@ -63,6 +69,12 @@ class Win32comExcelWrapper(object):
         self.xl.Interactive = True
         self.logger.info("Closing Excel")
         self.xl.Quit()
+
+#######################################################
+######                                           ######
+######           workbook operations             ######
+######                                           ######
+#######################################################
 
     def getWorksheet(self, wb, ws_name_or_number):
         """Returns a worksheet object corresponding to ws_name
@@ -127,6 +139,12 @@ class Win32comExcelWrapper(object):
         self.logger.info("Unhiding worksheet %s" %ws_name)
         wb.Sheets(ws_name).Visible = True
 
+#######################################################
+######                                           ######
+######              Write operations             ######
+######                                           ######
+#######################################################
+
     def writeCellValue(self, ws, row, column, value):
         """Write a value inside a cell
             -ws : worksheet object aquired by calling getWorksheet()
@@ -189,6 +207,12 @@ class Win32comExcelWrapper(object):
         lr_col = ul_col+width-1
         self.logger.info("writring data at location %s,%s to %s,%s" %(ul_row, ul_col, lr_row, lr_col))
         ws.Range(ws.Cells(ul_row, ul_col), ws.Cells(lr_row, lr_col)).Value = data
+
+#######################################################
+######                                           ######
+######              Read operations              ######
+######                                           ######
+#######################################################
 
     def readCellValue(self, ws, row, col):
         """Read the value of a cell
@@ -275,6 +299,12 @@ class Win32comExcelWrapper(object):
         self.logger.info("Reading area %s value(s)" %exn_coord)
         return ws.Range(exn_coord).Value
 
+#######################################################
+######                                           ######
+######          Location operations              ######
+######                                           ######
+#######################################################
+
     def computeColumnLastLine(self, ws, column):
         """
             Compute the last line of a column
@@ -297,6 +327,12 @@ class Win32comExcelWrapper(object):
         """
         self.logger.info("Computing last column of %s" %ws.Name)
         return ws.UsedRange.Column + ws.UsedRange.Columns.Count - 1
+
+#######################################################
+######                                           ######
+######         conversion operations             ######
+######                                           ######
+#######################################################
 
     #TODO : store the last opened workbook to do calculations?
     def computeCellExcelAddress(self, ws, row, col):
@@ -394,6 +430,12 @@ class Win32comExcelWrapper(object):
                         ws.Cells(start_row + len(data) - 1,
                                  start_col + len(data[0]) - 1)
                         ).GetAddress(RowAbsolute=False, ColumnAbsolute=False)
+
+#######################################################
+######                                           ######
+######          delete/insert operations         ######
+######                                           ######
+#######################################################
 
     def deleteColumn(self, ws, columns):
         """
