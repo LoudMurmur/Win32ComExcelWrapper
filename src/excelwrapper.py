@@ -600,6 +600,66 @@ class Win32comExcelWrapper(object):
             src_ws.Range(sourceArea).Copy()
         dst_ws.Paste(dst_ws.Range(destCell))
 
+#######################################################
+######                                           ######
+######          Advanced operations              ######
+######                                           ######
+#######################################################
+
+    def changeCharColor(self, ws, row, col, color):
+        """
+            Change the color of the text in a cell
+                -ws : a worksheet object
+                -row : int containing the row number of the cell
+                -col : int containing the col number of the cell
+                -color : BGR int representing a color (you can use the ExcelColors class)
+        """
+        ws.Cells(row, col).Font.Color = color
+
+    def readCharColor(self, ws, row, col):
+        """
+            Change the color of the text in a cell
+                -ws : a worksheet object
+                -row : int containing the row number of the cell
+                -col : int containing the col number of the cell
+                -return : BGR int representing a color
+        """
+        return ws.Cells(row, col).Font.Color
+
+    def changeCellColor(self, ws, row, col, color):
+        """
+            Change the color of a cell
+                -ws : a worksheet object
+                -row : int containing the row number of the cell
+                -col : int containing the col number of the cell
+                -color : BGR int representing a color (you can use the ExcelColors class)
+        """
+        ws.Cells(row, col).Interior.Color = color
+
+    def readCellColor(self, ws, row, col):
+        """
+            Change the color of a cell
+                -ws : a worksheet object
+                -row : int containing the row number of the cell
+                -col : int containing the col number of the cell
+                -return : BGR int representing a color
+        """
+        return ws.Cells(row, col).Interior.Color
+
+    def sortArea(self, ws, exn_coord, column, orientation):
+        """
+            Sort an area, do not put the header of the area in the selection!
+                -ws : a worksheet object
+                -exn_coor : an excel address in a string (ex : 'A2:G255')
+                -column : the column witch is going to matter as an int or string (2 or 'B:B')
+                -orientation : constants.xlDescending or constants.xlAscending
+        """
+        ws.Range(exn_coord).Sort(
+                                 Key1=ws.Columns(column),
+                                 Order1=orientation,
+                                 SortMethod=constants.xlPinYin,
+                                 Orientation = constants.xlTopToBottom
+                                 )
 
     class RangeCoordinate():
         """

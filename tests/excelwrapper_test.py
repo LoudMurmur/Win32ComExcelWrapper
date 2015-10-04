@@ -9,7 +9,8 @@ import os
 import time
 import logmanager
 
-from excelwrapper import Win32comExcelWrapper
+from excelwrapper import Win32comExcelWrapper, ExcelColors
+from win32com.client import constants
 from os.path import exists
 
 class ExcelWrapperTest(unittest.TestCase):
@@ -1114,6 +1115,94 @@ class ExcelWrapperTest(unittest.TestCase):
         copyPasteColumns()
         copyPasteRows()
         copyAreaRows()
+
+        wrapper.closeExcel()
+
+    def test_changeCharColor(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        wrapper.openExcel()
+        wb = wrapper.getWorkbook(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        ws = wrapper.getWorksheet(wb, 1)
+        wrapper.changeCharColor(ws, 1, 1, ExcelColors.GREENOLIVE)
+        text_color_A1 = ws.Cells(1, 1).Font.Color
+
+        self.assertEqual(ExcelColors.GREENOLIVE, text_color_A1)
+
+        wrapper.closeExcel()
+
+    def test_readCharColor(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        wrapper.openExcel()
+        wb = wrapper.getWorkbook(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        ws = wrapper.getWorksheet(wb, 1)
+        ws.Cells(4, 4).Font.Color = ExcelColors.GREENOLIVE
+
+        self.assertEqual(ExcelColors.GREENOLIVE, wrapper.readCharColor(ws, 4, 4))
+
+        wrapper.closeExcel()
+
+    def test_changeCellColor(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        wrapper.openExcel()
+        wb = wrapper.getWorkbook(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        ws = wrapper.getWorksheet(wb, 1)
+        wrapper.changeCellColor(ws, 5, 5, ExcelColors.GREENOLIVE)
+        color_A1 = ws.Cells(5, 5).Interior.Color
+
+        self.assertEqual(ExcelColors.GREENOLIVE, color_A1)
+
+        wrapper.closeExcel()
+
+    def test_readCellColor(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+
+        wrapper.openExcel()
+        wb = wrapper.getWorkbook(util.getTestRessourcePath("emptyWorkbook.xlsx"))
+        ws = wrapper.getWorksheet(wb, 1)
+        ws.Cells(7, 7).Interior.Color = ExcelColors.GREENOLIVE
+
+        self.assertEqual(ExcelColors.GREENOLIVE, wrapper.readCellColor(ws, 7, 7))
+
+        wrapper.closeExcel()
+
+    def test_sortAreaDescending(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        data_adr = "A1:C6"
+
+        wrapper.openExcel()
+        wb = wrapper.getWorkbook(util.getTestRessourcePath("sort.xls"))
+        ws = wrapper.getWorksheet(wb, 1)
+
+        wrapper.sortArea(ws, data_adr, "A:A", constants.xlDescending)
+        sorted_data = ws.Range(data_adr).Value
+        expected_data = wb.Sheets("D").Range(data_adr).Value
+
+        self.assertEqual(expected_data, sorted_data)
+
+        wrapper.closeExcel()
+
+    def test_sortAreaAscending(self):
+        wrapper = Win32comExcelWrapper()
+        wrapper.logger = self.LOGGER
+        data_adr = "A1:C6"
+
+        wrapper.openExcel()
+        wb = wrapper.getWorkbook(util.getTestRessourcePath("sort.xls"))
+        ws = wrapper.getWorksheet(wb, 1)
+
+        wrapper.sortArea(ws, data_adr, 1, constants.xlAscending)
+        sorted_data = ws.Range(data_adr).Value
+        expected_data = wb.Sheets("A").Range(data_adr).Value
+
+        self.assertEqual(expected_data, sorted_data)
 
         wrapper.closeExcel()
 
